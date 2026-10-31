@@ -1,8 +1,11 @@
 services:
   bom-weather:
+    image: eyao70/bom-weather:latest
     build:
       context: .
       dockerfile: Dockerfile
+      tags:
+        - ghcr.io/eyao70/bom-weather:latest
     container_name: bom-weather
     restart: unless-stopped
 

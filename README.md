@@ -1,5 +1,7 @@
 # BOM Weather
 
+![BOM Weather logo](docs/screenshots/logo.png)
+
 A FastAPI dashboard for Australian Bureau of Meteorology forecasts and
 observations.
 
@@ -12,26 +14,26 @@ readings.
 
 ## Build and publish to Docker Hub
 
-Replace `YOUR_DOCKERHUB_USERNAME` with your Docker Hub username. From this
-directory, build the image with a version tag and a `latest` tag:
+From this directory, build the image with tags for both Docker Hub and GitHub
+Container Registry (GHCR):
 
 ```sh
-docker build --pull \
-  -t YOUR_DOCKERHUB_USERNAME/bom-weather:1.0.0 \
-  -t YOUR_DOCKERHUB_USERNAME/bom-weather:latest \
-  .
+docker compose build --pull
 ```
 
-Sign in to Docker Hub and push both tags:
+Sign in to Docker Hub and GHCR, then push each tag:
 
 ```sh
-docker login -u YOUR_DOCKERHUB_USERNAME
-docker push YOUR_DOCKERHUB_USERNAME/bom-weather:1.0.0
-docker push YOUR_DOCKERHUB_USERNAME/bom-weather:latest
+docker login -u eyao70
+echo "$GHCR_TOKEN" | docker login ghcr.io -u eyao70 --password-stdin
+docker push eyao70/bom-weather:latest
+docker push ghcr.io/eyao70/bom-weather:latest
 ```
 
-Choose whether the repository is public or private in Docker Hub. Do not put
-your Docker Hub password or access token in this file or in the image.
+For GHCR, use a GitHub Personal Access Token (classic) with `write:packages`
+permission as `GHCR_TOKEN`. Set package visibility in GitHub as desired. Choose
+whether the Docker Hub repository is public or private there. Do not put
+passwords or access tokens in this file or in the image.
 
 ## Run the published image
 
@@ -40,7 +42,7 @@ docker run -d \
   --name bom-weather \
   --restart unless-stopped \
   -p 8088:8088 \
-  YOUR_DOCKERHUB_USERNAME/bom-weather:1.0.0
+  eyao70/bom-weather:latest
 ```
 
 Open [http://localhost:8088](http://localhost:8088). The image includes the
