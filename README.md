@@ -10,8 +10,6 @@ readings.
 
 ![Dashboard preview](docs/screenshots/dashboard.png)
 
-![Seven-day forecast preview](docs/screenshots/forecast.png)
-
 ## Build and publish to Docker Hub
 
 Replace `YOUR_DOCKERHUB_USERNAME` with your Docker Hub username. From this
