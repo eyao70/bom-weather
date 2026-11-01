@@ -17,10 +17,34 @@
             color-scheme: dark;
             --bg: #101827;
             --panel: #1b283b;
+            --surface: #111d2e;
+            --input-bg: #0c1422;
             --border: #34445b;
             --text: #f1f5f9;
             --muted: #a9b8cb;
             --accent: #65c8ff;
+            --accent-text: #092039;
+            --header-start: #172e4c;
+            --header-end: #101827;
+            --error: #ffaaa8;
+            --chart-grid: #34445b;
+        }
+
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --bg: #f3f6fa;
+            --panel: #ffffff;
+            --surface: #f6f8fb;
+            --input-bg: #ffffff;
+            --border: #cbd5e1;
+            --text: #172334;
+            --muted: #526277;
+            --accent: #087fbf;
+            --accent-text: #ffffff;
+            --header-start: #dceeff;
+            --header-end: #f3f6fa;
+            --error: #b42318;
+            --chart-grid: #cbd5e1;
         }
 
         * { box-sizing: border-box; }
@@ -33,20 +57,98 @@
         }
 
         header {
+            position: relative;
             padding: 28px 20px;
             text-align: center;
-            background: linear-gradient(135deg, #172e4c, #101827);
+            background: linear-gradient(135deg, var(--header-start), var(--header-end));
             border-bottom: 1px solid var(--border);
         }
 
         header h1 {
+            position: relative;
+            z-index: 1;
             margin: 0 0 8px;
             font-size: clamp(25px, 4vw, 36px);
         }
 
         header p {
+            position: relative;
+            z-index: 1;
             color: var(--muted);
             margin: 0;
+        }
+
+        .theme-control {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            z-index: 2;
+        }
+
+        .theme-toggle {
+            position: relative;
+            width: 68px;
+            min-height: 44px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .theme-toggle-track {
+            position: absolute;
+            inset: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: var(--surface);
+        }
+
+        .theme-toggle svg {
+            position: relative;
+            z-index: 1;
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .theme-toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        :root[data-theme="dark"] .theme-toggle-thumb {
+            transform: translateX(24px);
+        }
+
+        .sun-icon { color: var(--muted); }
+        .moon-icon { color: var(--accent-text); }
+        :root[data-theme="light"] .sun-icon { color: var(--accent-text); }
+        :root[data-theme="light"] .moon-icon { color: var(--muted); }
+
+        .theme-toggle:active .theme-toggle-thumb {
+            transform: scale(.92);
+        }
+
+        :root[data-theme="dark"] .theme-toggle:active .theme-toggle-thumb {
+            transform: translateX(24px) scale(.92);
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
         }
 
         main {
@@ -87,7 +189,7 @@
             min-width: 0;
             padding: 10px 14px;
             color: var(--text);
-            background: #0c1422;
+            background: var(--input-bg);
             border: 1px solid var(--border);
         }
 
@@ -95,7 +197,7 @@
             padding: 10px 22px;
             border: 0;
             background: var(--accent);
-            color: #092039;
+            color: var(--accent-text);
             font-weight: 750;
             cursor: pointer;
             white-space: nowrap;
@@ -112,7 +214,7 @@
             overflow-wrap: anywhere;
         }
 
-        #status.error { color: #ffaaa8; }
+        #status.error { color: var(--error); }
 
         [hidden] { display: none !important; }
 
@@ -203,7 +305,7 @@
         .metric {
             padding: 14px;
             border-radius: 10px;
-            background: #111d2e;
+            background: var(--surface);
             min-width: 0;
         }
 
@@ -266,7 +368,7 @@
             padding: 12px;
             border: 1px solid var(--border);
             border-radius: 10px;
-            background: #111d2e;
+            background: var(--surface);
         }
 
         .temperature-chart svg {
@@ -276,7 +378,7 @@
         }
 
         .temperature-chart .grid-line {
-            stroke: #34445b;
+            stroke: var(--chart-grid);
             stroke-width: 1;
         }
 
@@ -294,7 +396,7 @@
         }
 
         .temperature-chart .high-line { stroke: #ff987a; }
-        .temperature-chart .low-line { stroke: #65c8ff; }
+        .temperature-chart .low-line { stroke: var(--accent); }
         .temperature-chart .high-point { fill: #ff987a; }
         .temperature-chart .low-point { fill: #65c8ff; }
 
@@ -311,7 +413,7 @@
             padding: 5px 8px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: rgba(17, 29, 46, .92);
+            background: var(--panel);
             color: var(--muted);
             font-size: 13px;
         }
@@ -329,7 +431,7 @@
         }
 
         .temperature-chart-legend .high-key { background: #ff987a; }
-        .temperature-chart-legend .low-key { background: #65c8ff; }
+        .temperature-chart-legend .low-key { background: var(--accent); }
 
         .forecast-visual-toolbar {
             display: flex;
@@ -347,7 +449,7 @@
             height: 245px;
             border: 1px solid var(--border);
             border-radius: 10px;
-            background: #111d2e;
+            background: var(--surface);
             overflow: hidden;
         }
 
@@ -426,6 +528,8 @@
         }
 
         @media (max-width: 420px) {
+            header { padding: 72px 16px 24px; }
+            .theme-control { top: 14px; right: 14px; }
             .search-row { flex-direction: column; }
             .forecast-grid { grid-template-columns: 1fr; }
             .metrics { grid-template-columns: 1fr 1fr; }
@@ -435,6 +539,28 @@
 
 <body>
 <header>
+    <div class="theme-control">
+        <button
+            id="themeToggle"
+            class="theme-toggle"
+            type="button"
+            role="switch"
+            aria-label="Light theme"
+            aria-checked="false"
+            title="Toggle light and dark theme"
+        >
+            <span class="theme-toggle-track" aria-hidden="true">
+                <svg class="sun-icon" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24">
+                    <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>
+                </svg>
+                <span class="theme-toggle-thumb"></span>
+            </span>
+        </button>
+    </div>
     <h1>Australian Weather</h1>
     <p>Current observations and 7-day forecasts from BOM</p>
 </header>
@@ -536,6 +662,24 @@
     crossorigin=""
 ></script>
 <script>
+    const themeToggle = document.getElementById("themeToggle");
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+    function setTheme(theme) {
+        const selectedTheme = theme === "light" ? "light" : "dark";
+        document.documentElement.dataset.theme = selectedTheme;
+        localStorage.setItem("bom-weather-theme", selectedTheme);
+        themeColorMeta.content = selectedTheme === "light" ? "#f3f6fa" : "#101827";
+        themeToggle.setAttribute("aria-checked", String(selectedTheme === "light"));
+    }
+
+    setTheme(localStorage.getItem("bom-weather-theme"));
+
+    themeToggle.addEventListener("click", () => {
+        const currentTheme = document.documentElement.dataset.theme;
+        setTheme(currentTheme === "dark" ? "light" : "dark");
+    });
+
     const form = document.getElementById("searchForm");
     const button = document.getElementById("searchButton");
     const statusBox = document.getElementById("status");

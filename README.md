@@ -25,6 +25,7 @@ readings.
 - **Seven-day forecast:** view forecast details, rain chances, and daily
   temperature highs and lows.
 - **Weather visuals:** explore a temperature chart and animated rain radar.
+- **Theme settings:** switch between light and dark themes from the settings menu.
 - **Lightweight deployment:** run a single container on your own computer or
   home server, with automatic restart support.
 
