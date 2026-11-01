@@ -63,16 +63,18 @@ in the image.
 
 ## Deploy the container image
 
-Docker is required. Configure `.env` as described above, then pull the
-published image and start the container:
+Docker is required. Pull the published image and start the container, replacing
+the Turnstile placeholders with your widget's values:
 
 ```sh
 docker pull eyao70/bom-weather:latest
 docker run -d \
-  --env-file .env \
   --name bom-weather \
   --restart unless-stopped \
   -p 8088:8088 \
+  -e TURNSTILE_SITE_KEY='your-site-key' \
+  -e TURNSTILE_SECRET_KEY='your-secret-key' \
+  -e TURNSTILE_EXPECTED_HOSTNAME='your-domain.example' \
   eyao70/bom-weather:latest
 ```
 
@@ -86,9 +88,14 @@ To update to the latest published image:
 docker pull eyao70/bom-weather:latest
 docker rm -f bom-weather
 docker run -d \
-  --env-file .env \
   --name bom-weather \
   --restart unless-stopped \
   -p 8088:8088 \
+  -e TURNSTILE_SITE_KEY='your-site-key' \
+  -e TURNSTILE_SECRET_KEY='your-secret-key' \
+  -e TURNSTILE_EXPECTED_HOSTNAME='your-domain.example' \
   eyao70/bom-weather:latest
 ```
+
+Keep the secret key private. You can also use `--env-file .env` instead of
+individual `-e` options.
