@@ -54,6 +54,13 @@ with Cloudflare's
 set `TURNSTILE_EXPECTED_HOSTNAME=example.com`; Cloudflare's test keys return
 that hostname.
 
+The Docker image exposes these runtime variables for container setup screens:
+`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, and
+`TURNSTILE_EXPECTED_HOSTNAME`. Enter your own values when creating the
+container, or provide them from `.env` using Docker Compose or Docker's
+`--env-file` option. The secret key is supplied at runtime and is not included
+in the image.
+
 ## Deploy the container image
 
 Docker is required. Configure `.env` as described above, then pull the

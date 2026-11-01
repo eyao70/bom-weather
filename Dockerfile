@@ -10,6 +10,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Display Python logs immediately
 ENV PYTHONUNBUFFERED=1
 
+# Provide Turnstile settings at runtime; do not bake credentials into the image.
+ENV TURNSTILE_SITE_KEY="" \
+    TURNSTILE_SECRET_KEY="" \
+    TURNSTILE_EXPECTED_HOSTNAME=""
+
 # Install Python dependencies first for better build caching
 COPY requirements.txt .
 
