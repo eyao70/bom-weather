@@ -1,5 +1,5 @@
 # Use the official Python slim image
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Set the working directory
 WORKDIR /app
@@ -13,8 +13,8 @@ ENV PYTHONUNBUFFERED=1
 # Install Python dependencies first for better build caching
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip uninstall --yes pip
 
 # Copy application source code
 COPY app/ ./app/
