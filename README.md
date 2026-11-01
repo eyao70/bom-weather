@@ -14,7 +14,7 @@ browser—no app installation required.
 The screenshot is an illustrative preview using sample values, not live BOM
 readings.
 
-![Dashboard preview](docs/screenshots/dashboard.png)
+![Dashboard preview](docs/screenshots/dashboard-theme-toggle.png)
 
 ## What it includes
 
