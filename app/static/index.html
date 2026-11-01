@@ -178,6 +178,37 @@
             gap: 10px;
         }
 
+        .human-verification-dialog {
+            width: min(420px, calc(100% - 32px));
+            padding: 28px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--panel);
+            color: var(--text);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+        }
+
+        .human-verification-dialog::backdrop {
+            background: rgba(5, 12, 22, .68);
+            backdrop-filter: blur(3px);
+        }
+
+        .human-verification-dialog h2 {
+            margin: 0 0 8px;
+        }
+
+        .human-verification-dialog p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .turnstile-widget {
+            display: flex;
+            justify-content: center;
+            min-height: 65px;
+            margin-top: 20px;
+        }
+
         input, button {
             min-height: 48px;
             border-radius: 9px;
@@ -538,6 +569,11 @@
 </head>
 
 <body>
+<dialog id="humanVerificationDialog" class="human-verification-dialog" aria-labelledby="humanVerificationTitle">
+    <h2 id="humanVerificationTitle">Verify you’re human</h2>
+    <p id="verificationStatus">Complete the security check to continue.</p>
+    <div id="turnstileWidget" class="turnstile-widget"></div>
+</dialog>
 <header>
     <div class="theme-control">
         <button
@@ -682,6 +718,9 @@
 
     const form = document.getElementById("searchForm");
     const button = document.getElementById("searchButton");
+    const humanVerificationDialog = document.getElementById("humanVerificationDialog");
+    const verificationStatus = document.getElementById("verificationStatus");
+    const turnstileWidget = document.getElementById("turnstileWidget");
     const statusBox = document.getElementById("status");
     const results = document.getElementById("results");
     const radarPlayButton = document.getElementById("radarPlayButton");
@@ -692,6 +731,99 @@
     let radarFrames = [];
     let radarFrameIndex = 0;
     let radarTimer;
+    let turnstileWidgetId;
+    let verificationInProgress = false;
+
+    humanVerificationDialog.addEventListener("cancel", event => {
+        event.preventDefault();
+    });
+
+    window.onTurnstileSuccess = async token => {
+        if (verificationInProgress) return;
+        verificationInProgress = true;
+        verificationStatus.textContent = "Verifying…";
+
+        try {
+            const response = await fetch("/api/verify-turnstile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "Verification failed. Please try again.");
+            }
+
+            humanVerificationDialog.close();
+            document.getElementById("postcode").focus();
+        } catch (error) {
+            verificationStatus.textContent = error.message;
+            if (window.turnstile && turnstileWidgetId !== undefined) {
+                window.turnstile.reset(turnstileWidgetId);
+            }
+        } finally {
+            verificationInProgress = false;
+        }
+    };
+
+    window.onTurnstileExpired = () => {
+        verificationStatus.textContent = "Verification expired. Please try again.";
+    };
+
+    window.onTurnstileError = () => {
+        verificationStatus.textContent =
+            "Unable to load verification. Check your connection and refresh.";
+    };
+
+    async function initializeTurnstile() {
+        try {
+            const response = await fetch("/api/turnstile-config");
+            const config = await response.json();
+
+            if (!response.ok) {
+                throw new Error(config.detail || "Unable to load verification settings.");
+            }
+
+            if (config.verified) return;
+
+            humanVerificationDialog.showModal();
+
+            if (!config.configured) {
+                verificationStatus.textContent =
+                    "Turnstile is not configured. Set TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY on the server.";
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src =
+                "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+            script.async = true;
+            script.defer = true;
+            script.onload = () => {
+                if (!window.turnstile) {
+                    window.onTurnstileError();
+                    return;
+                }
+                turnstileWidgetId = window.turnstile.render(
+                    turnstileWidget,
+                    {
+                        sitekey: config.site_key,
+                        callback: window.onTurnstileSuccess,
+                        "expired-callback": window.onTurnstileExpired,
+                        "error-callback": window.onTurnstileError
+                    }
+                );
+            };
+            script.onerror = window.onTurnstileError;
+            document.head.append(script);
+        } catch (error) {
+            humanVerificationDialog.showModal();
+            verificationStatus.textContent = error.message;
+        }
+    }
+
+    initializeTurnstile();
 
     function escapeHTML(value) {
         return String(value ?? "").replace(/[&<>"']/g, char => ({

@@ -15,6 +15,9 @@ services:
     environment:
       TZ: Australia/Melbourne
       PYTHONUNBUFFERED: "1"
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      TURNSTILE_EXPECTED_HOSTNAME: ${TURNSTILE_EXPECTED_HOSTNAME:-}
 
     healthcheck:
       test:
