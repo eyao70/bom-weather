@@ -23,7 +23,7 @@ readings.
 - **Current conditions:** see observations from the nearest available BOM
   station, including temperature, humidity, wind, and rainfall when available.
 - **Seven-day forecast:** view forecast details, rain chances, and daily
-  temperature highs and lows.
+  temperature highs and lows, with a weather icon for each day.
 - **Weather visuals:** explore a temperature chart and animated rain radar.
 - **Theme settings:** switch between light and dark themes from the settings menu.
 - **Turnstile verification:** verify visitors before allowing weather requests.
