@@ -515,6 +515,12 @@
             margin-bottom: 12px;
         }
 
+        .day-weather-icon {
+            width: 30px;
+            height: 30px;
+            flex: none;
+        }
+
         .day h4 { margin: 0; }
 
         .day .description {
@@ -1060,7 +1066,7 @@
             }).format(parsed);
     }
 
-    function weatherIcon(descriptor) {
+    function weatherIcon(descriptor, className = "current-condition-icon") {
         const cloud = `
             <path d="M20 43h30a12 12 0 0 0 0-24 17 17 0 0 0-32-3A14 14 0 0 0 20 43Z"
                   fill="rgba(207,232,255,.22)" stroke="#cfe8ff" stroke-width="2.5"
@@ -1096,7 +1102,7 @@
         }
 
         return `
-            <svg class="current-condition-icon" viewBox="0 0 64 64"
+            <svg class="${className}" viewBox="0 0 64 64"
                  aria-hidden="true" focusable="false">
                 ${art}
             </svg>`;
@@ -1190,6 +1196,7 @@
         grid.innerHTML = upcomingDays.map(day => `
             <article class="day">
                 <div class="day-heading">
+                    ${weatherIcon(day.icon, "day-weather-icon")}
                     <h4>${escapeHTML(formatDate(day.date))}</h4>
                 </div>
                 <div class="description">

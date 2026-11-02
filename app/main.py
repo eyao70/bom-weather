@@ -323,6 +323,7 @@ async def get_weather(
                 forecast_days.append({
                     "date": iso(day.date),
                     "description": day.short_text,
+                    "icon": day.icon_descriptor,
                     "details": day.extended_text,
                     "min": day.temp_min,
                     "max": day.temp_max,
