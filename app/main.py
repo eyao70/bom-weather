@@ -104,7 +104,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="BOM Weather Dashboard",
     description="Weather information from official BOM data feeds",
-    version="1.1.2",
+    version="1.1.3",
     lifespan=lifespan,
 )
 
@@ -261,9 +261,9 @@ async def get_weather(
 
             town, distance_km = nearest_towns[0]
 
-            # Retrieve the seven-day forecast using official feeds.
+            # Include daily extras, which provide UV index and extended text.
             daily = await client.get_daily_forecast(
-                town, extras=False
+                town, extras=True
             )
 
             # Select the nearest observation station in the same state.

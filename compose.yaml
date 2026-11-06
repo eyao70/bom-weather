@@ -5,7 +5,10 @@ services:
       context: .
       dockerfile: Dockerfile
       tags:
+        - eyao70/bom-weather:latest
+        - eyao70/bom-weather:v1.1.3
         - ghcr.io/eyao70/bom-weather:latest
+        - ghcr.io/eyao70/bom-weather:v1.1.3
     container_name: bom-weather
     restart: unless-stopped
 
