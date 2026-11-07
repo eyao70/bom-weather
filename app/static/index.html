@@ -561,7 +561,7 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             gap: 4px 16px;
             margin-top: 12px;
         }
@@ -569,6 +569,7 @@
         .sun-time-group {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 4px 16px;
         }
 
@@ -578,8 +579,7 @@
         }
 
         .observed-time {
-            margin-left: auto;
-            text-align: right;
+            text-align: left;
         }
 
         .sun-time-icon {
@@ -616,7 +616,10 @@
             .theme-control { top: 14px; right: 14px; }
             .search-row { flex-direction: column; }
             .forecast-grid { grid-template-columns: 1fr; }
-            .metric-row { grid-template-columns: 1fr 1fr; }
+            .metric-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+            .metric { padding: 9px 7px; }
+            .metric span { font-size: 10px; }
+            .metric strong { font-size: 13px; }
         }
     </style>
 </head>
