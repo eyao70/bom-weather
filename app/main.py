@@ -11,13 +11,14 @@ import urllib.request
 from contextlib import asynccontextmanager
 from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from bom_weather_api import BomClient, Coordinate
+from bom_weather_api import BomClient, BomError, Coordinate
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -104,7 +105,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="BOM Weather Dashboard",
     description="Weather information from official BOM data feeds",
-    version="1.1.3",
+    version="1.1.4",
     lifespan=lifespan,
 )
 
@@ -266,6 +267,37 @@ async def get_weather(
                 town, extras=True
             )
 
+            hourly_uv_by_date: dict[str, float] = {}
+            current_uv_index = None
+            try:
+                hourly = await client.get_hourly_forecast(town.coordinate)
+                timezone = (
+                    ZoneInfo(town.timezone)
+                    if town.timezone
+                    else ZoneInfo("UTC")
+                )
+                current_hour = datetime.now(timezone).replace(
+                    minute=0, second=0, microsecond=0
+                )
+                for hour in hourly.hours:
+                    local_time = hour.time.astimezone(timezone)
+                    if local_time.replace(
+                        minute=0, second=0, microsecond=0
+                    ) == current_hour:
+                        current_uv_index = hour.uv_index
+                    if hour.uv_index is None:
+                        continue
+                    date_key = local_time.date().isoformat()
+                    hourly_uv_by_date[date_key] = max(
+                        hourly_uv_by_date.get(date_key, hour.uv_index),
+                        hour.uv_index,
+                    )
+            except BomError as exc:
+                logger.warning(
+                    "Unable to retrieve hourly UV forecast: %s",
+                    exc,
+                )
+
             # Select the nearest observation station in the same state.
             stations = await client.get_stations(town.product_state)
 
@@ -329,8 +361,26 @@ async def get_weather(
                     "max": day.temp_max,
                     "rain_chance": day.rain_chance,
                     "rain_amount": day.rain_amount_range,
-                    "uv_index": day.uv_index,
+                    "uv_index": (
+                        day.uv_index
+                        if day.uv_index is not None
+                        else hourly_uv_by_date.get(iso(day.date))
+                    ),
+                    "uv_category": day.uv_category,
+                    "sunrise": iso(day.sunrise),
+                    "sunset": iso(day.sunset),
                 })
+
+            forecast_timezone = (
+                ZoneInfo(town.timezone)
+                if town.timezone
+                else ZoneInfo("UTC")
+            )
+            today = datetime.now(forecast_timezone).date()
+            today_forecast = next(
+                (day for day in daily.days if day.date == today),
+                None,
+            )
 
             return {
                 "postcode": postcode,
@@ -339,6 +389,7 @@ async def get_weather(
                 "latitude": location["lat"],
                 "longitude": location["lon"],
                 "forecast_town": town.name,
+                "timezone": town.timezone,
                 "forecast_distance_km": round(distance_km, 1),
                 "forecast_issued_at": iso(daily.issued_at),
                 "current_condition": (
@@ -347,6 +398,17 @@ async def get_weather(
                         "icon": daily.days[0].icon_descriptor,
                     }
                     if daily.days
+                    else None
+                ),
+                "current_uv_index": current_uv_index,
+                "current_sunrise": (
+                    iso(today_forecast.sunrise)
+                    if today_forecast
+                    else None
+                ),
+                "current_sunset": (
+                    iso(today_forecast.sunset)
+                    if today_forecast
                     else None
                 ),
                 "observation": observation_data,

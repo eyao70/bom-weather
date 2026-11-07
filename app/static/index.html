@@ -546,6 +546,30 @@
             overflow-wrap: anywhere;
         }
 
+        .sun-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sun-times {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 16px;
+            margin-top: 12px;
+        }
+
+        .sun-time-icon {
+            width: 16px;
+            height: 16px;
+            flex: none;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         footer {
             padding: 26px 16px;
             text-align: center;
@@ -1066,6 +1090,19 @@
             }).format(parsed);
     }
 
+    function formatTime(dateTime, timeZone) {
+        if (!dateTime) return "N/A";
+
+        const parsed = new Date(dateTime);
+        if (Number.isNaN(parsed.getTime())) return "N/A";
+
+        return new Intl.DateTimeFormat("en-AU", {
+            timeZone: timeZone || "Australia/Melbourne",
+            hour: "numeric",
+            minute: "2-digit"
+        }).format(parsed);
+    }
+
     function weatherIcon(descriptor, className = "current-condition-icon") {
         const cloud = `
             <path d="M20 43h30a12 12 0 0 0 0-24 17 17 0 0 0-32-3A14 14 0 0 0 20 43Z"
@@ -1137,8 +1174,35 @@
             </div>`;
     }
 
-    function renderCurrent(observation, condition) {
+    function renderCurrent(
+        observation,
+        condition,
+        uvIndex,
+        sunrise,
+        sunset,
+        timeZone
+    ) {
         const target = document.getElementById("currentWeather");
+        const uvMetric = uvIndex !== null && uvIndex !== undefined && uvIndex !== ""
+            ? metric("Current UV index", uvIndex)
+            : "";
+        const sunTimes = `
+            ${sunrise ? `
+                <p class="small sun-time">
+                    <svg class="sun-time-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 18h18M5 18a7 7 0 0 1 14 0M12 2v3m-8 1 2 2m12-2-2 2m-8 1 1 1m6-1-1 1"/>
+                    </svg>
+                    Sunrise: ${formatTime(sunrise, timeZone)}
+                </p>
+            ` : ""}
+            ${sunset ? `
+                <p class="small sun-time">
+                    <svg class="sun-time-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 18h18M5 18a7 7 0 0 1 14 0M12 5v3m-8 7 2-2m12 2-2-2m-8 1 1-1m6 1-1-1"/>
+                    </svg>
+                    Sunset: ${formatTime(sunset, timeZone)}
+                </p>
+            ` : ""}`;
 
         if (!observation) {
             target.innerHTML = `
@@ -1146,7 +1210,9 @@
                 <p>Current observations are unavailable.</p>
                 <p class="small">
                     The seven-day forecast may still be available.
-                </p>`;
+                </p>
+                ${sunrise || sunset ? `<div class="sun-times">${sunTimes}</div>` : ""}
+                ${uvMetric ? `<div class="metrics">${uvMetric}</div>` : ""}`;
             return;
         }
 
@@ -1154,16 +1220,18 @@
             ${currentConditionMarkup(condition, observation)}
 
             <div class="metrics">
+                ${uvMetric}
                 ${metric("Humidity", observation.humidity, "%")}
                 ${metric("Wind speed", observation.wind_speed, " km/h")}
                 ${metric("Wind direction", observation.wind_direction)}
                 ${metric("Wind gust", observation.wind_gust, " km/h")}
                 ${metric("Rain since 9 am", observation.rain_since_9am, " mm")}
                 ${metric("Observed at", observation.observed_at)}
-            </div>`;
+            </div>
+            ${sunrise || sunset ? `<div class="sun-times">${sunTimes}</div>` : ""}`;
     }
 
-    function renderForecast(days) {
+    function renderForecast(days, timeZone) {
         const grid = document.getElementById("forecastGrid");
 
         if (!days || days.length === 0) {
@@ -1175,7 +1243,7 @@
         renderTemperatureChart(days);
 
         const todayParts = new Intl.DateTimeFormat("en-AU", {
-            timeZone: "Australia/Melbourne",
+            timeZone: timeZone || "Australia/Melbourne",
             year: "numeric",
             month: "2-digit",
             day: "2-digit"
@@ -1218,8 +1286,25 @@
                     Rainfall: ${value(day.rain_amount)}
                 </p>
 
+                ${day.uv_index !== null && day.uv_index !== undefined && day.uv_index !== "" ? `
                 <p class="small">
-                    UV index: ${value(day.uv_index)}
+                    Maximum UV index: ${value(day.uv_index)}
+                    ${day.uv_category ? `(${escapeHTML(day.uv_category.replaceAll("_", " "))})` : ""}
+                </p>
+                ` : ""}
+
+                <p class="small sun-time">
+                    <svg class="sun-time-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 18h18M5 18a7 7 0 0 1 14 0M12 2v3m-8 1 2 2m12-2-2 2m-8 1 1 1m6-1-1 1"/>
+                    </svg>
+                    Sunrise: ${formatTime(day.sunrise, timeZone)}
+                </p>
+
+                <p class="small sun-time">
+                    <svg class="sun-time-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 18h18M5 18a7 7 0 0 1 14 0M12 5v3m-8 7 2-2m12 2-2-2m-8 1 1-1m6 1-1-1"/>
+                    </svg>
+                    Sunset: ${formatTime(day.sunset, timeZone)}
                 </p>
             </article>
         `).join("");
@@ -1269,8 +1354,15 @@
             document.getElementById("forecastTown").textContent =
                 `BOM forecast location · ${data.forecast_distance_km} km away`;
 
-            renderCurrent(data.observation, data.current_condition);
-            renderForecast(data.forecast);
+            renderCurrent(
+                data.observation,
+                data.current_condition,
+                data.current_uv_index,
+                data.current_sunrise,
+                data.current_sunset,
+                data.timezone
+            );
+            renderForecast(data.forecast, data.timezone);
             document.getElementById("bomRadarLink").href =
                 "https://www.bom.gov.au/weather-and-climate/rain-radar-and-weather-maps";
 

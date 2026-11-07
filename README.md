@@ -12,18 +12,22 @@ browser—no app installation required.
 ## Screenshots
 
 The screenshot is an illustrative preview using sample values, not live BOM
-readings.
+readings. It shows current UV and today's sunrise and sunset, plus available
+daily UV forecasts and sun times.
 
-![Dashboard preview](docs/screenshots/dashboard-theme-toggle.png)
+![BOM Weather v1.1.4 dashboard preview](docs/screenshots/dashboard-v1.1.4.png)
 
 ## What it includes
 
 - **Postcode search:** enter an Australian four-digit postcode to find nearby
   weather information.
 - **Current conditions:** see observations from the nearest available BOM
-  station, including temperature, humidity, wind, and rainfall when available.
+  station, including temperature, humidity, wind, rainfall, and current UV
+  when available. Today's sunrise and sunset are shown in the forecast town's
+  local time.
 - **Seven-day forecast:** view forecast details, rain chances, and daily
-  temperature highs and lows, with a weather icon for each day.
+  temperature highs and lows, daily UV when BOM provides it, sunrise and
+  sunset times, and a weather icon for each day.
 - **Weather visuals:** explore a temperature chart and animated rain radar.
 - **Theme settings:** switch between light and dark themes from the settings menu.
 - **Turnstile verification:** verify visitors before allowing weather requests.
