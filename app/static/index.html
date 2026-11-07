@@ -328,9 +328,14 @@
 
         .metrics {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
             margin-top: 20px;
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
         }
 
         .metric {
@@ -555,8 +560,26 @@
         .sun-times {
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
             gap: 4px 16px;
             margin-top: 12px;
+        }
+
+        .sun-time-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 16px;
+        }
+
+        .sun-time,
+        .observed-time {
+            margin: 0;
+        }
+
+        .observed-time {
+            margin-left: auto;
+            text-align: right;
         }
 
         .sun-time-icon {
@@ -585,7 +608,7 @@
             .forecast-visuals { grid-template-columns: 1fr; }
             .forecast-visual-footer { grid-template-columns: 1fr; }
             .forecast-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .metric-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         @media (max-width: 420px) {
@@ -593,7 +616,7 @@
             .theme-control { top: 14px; right: 14px; }
             .search-row { flex-direction: column; }
             .forecast-grid { grid-template-columns: 1fr; }
-            .metrics { grid-template-columns: 1fr 1fr; }
+            .metric-row { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -1220,6 +1243,15 @@
                     Sunset: ${formatTime(sunset, timeZone)}
                 </p>
             ` : ""}`;
+        const observedTime = observation?.observed_at ? `
+            <p class="small sun-time observed-time">
+                <svg class="sun-time-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 7v5l3 2"/>
+                </svg>
+                Observed at: ${formatTime(observation.observed_at, timeZone)}
+            </p>
+        ` : "";
 
         if (!observation) {
             target.innerHTML = `
@@ -1228,7 +1260,11 @@
                 <p class="small">
                     The seven-day forecast may still be available.
                 </p>
-                ${sunrise || sunset ? `<div class="sun-times">${sunTimes}</div>` : ""}
+                ${sunrise || sunset ? `
+                    <div class="sun-times">
+                        <div class="sun-time-group">${sunTimes}</div>
+                    </div>
+                ` : ""}
                 ${uvMetric ? `<div class="metrics">${uvMetric}</div>` : ""}`;
             return;
         }
@@ -1237,15 +1273,23 @@
             ${currentConditionMarkup(condition, observation)}
 
             <div class="metrics">
-                ${uvMetric}
-                ${metric("Humidity", observation.humidity, "%")}
-                ${metric("Wind speed", observation.wind_speed, " km/h")}
-                ${metric("Wind direction", observation.wind_direction)}
-                ${metric("Wind gust", observation.wind_gust, " km/h")}
-                ${metric("Rain since 9 am", observation.rain_since_9am, " mm")}
-                ${metric("Observed at", observation.observed_at)}
+                <div class="metric-row">
+                    ${metric("Rain since 9 am", observation.rain_since_9am, " mm")}
+                    ${uvMetric}
+                    ${metric("Humidity", observation.humidity, "%")}
+                </div>
+                <div class="metric-row">
+                    ${metric("Wind speed", observation.wind_speed, " km/h")}
+                    ${metric("Wind direction", observation.wind_direction)}
+                    ${metric("Wind gust", observation.wind_gust, " km/h")}
+                </div>
             </div>
-            ${sunrise || sunset ? `<div class="sun-times">${sunTimes}</div>` : ""}`;
+            ${sunrise || sunset || observedTime ? `
+                <div class="sun-times">
+                    <div class="sun-time-group">${sunTimes}</div>
+                    ${observedTime}
+                </div>
+            ` : ""}`;
     }
 
     function renderForecast(days, timeZone) {
